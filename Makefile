@@ -1,18 +1,25 @@
-.PHONY: $(PLATFORMS) release
+build_all: packr
+	@CGO_ENABLED=0 go build -o terraform-provider-bless_v1.0.0_darwin
+	@CGO_ENABLED=0 GOOS=linux go build -o terraform-provider-bless_v1.0.0_linux
+	@CGO_ENABLED=0 GOOS=windows go build -o terraform-provider-bless_v1.0.0_windows
 
-NAME := terraform-provider-bless
-PLATFORMS ?= darwin/amd64 linux/amd64 windows/amd64
-VERSION ?= $(shell git describe &>/dev/null && echo "_$$(git describe)")
+test: packr
+	@TF_ACC=yes go test -cover -v ./...
 
-temp = $(subst /, ,$@)
-os = $(word 1, $(temp))
-arch = $(word 2, $(temp))
+packr: clean
+	packr
 
-BASE := $(NAME)$(VERSION)
-RELEASE_DIR := ./release
+clean: ## clean the repo
+	rm terraform-provider-bless 2>/dev/null || true
+	go clean
+	rm -rf dist 2>/dev/null || true
+	packr clean
+	rm coverage.out 2>/dev/null || true
 
-release: $(PLATFORMS)
 
-$(PLATFORMS):
-	GOPROXY="off" GOFLAGS="-mod=vendor" GOOS=$(os) GOARCH=$(arch) go build -o '$(RELEASE_DIR)/$(BASE)-$(os)-$(arch)'
+release: ## run a release
+	bff bump
+	git push
+	goreleaser release --rm-dist
 
+.PHONY: build test packr release
