@@ -14,5 +14,4 @@ ca_private_key = {{ .EncryptedPrivateKey }}
 use_kmsauth = True
 kmsauth_key_id = {{ .KMSAuthKeyID }}
 kmsauth_serviceid = {{ .Name }}
-kmsauth_remote_usernames_allowed = ubuntu, ec2-user
 kmsauth_iam_group_name_format = {{ .KMSAuthIAMGroupNameFormat }}
